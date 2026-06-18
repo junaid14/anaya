@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Anaya">
+<meta name="theme-color" content="#0D2C4D">
+<title>Anaya — Care. Support. Peace of Mind.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== PATIENT PICKER ===== -->
+<div class="picker-screen" id="pickerScreen">
+  <div class="picker-header">
+    <div class="picker-title" style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">🩺</span><span>Anaya <span style="display:block;font-size:12px;color:var(--muted);font-weight:400">Care. Support. Peace of Mind.</span></span></div>
+    <button class="btn-add-patient" onclick="openAddPatient()">+ New Patient</button>
+  </div>
+  <div class="patient-list" id="patientList"></div>
+</div>
+
+<!-- ===== ADD / EDIT PATIENT MODAL ===== -->
+<div class="modal-overlay hidden" id="patientModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">New Patient</div>
+    <div class="modal-sub">Enter patient details to get started</div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="mName" placeholder="e.g. Arjun Hashmi" maxlength="40" autocorrect="off"></div>
+    <div class="form-group"><label>Age</label><input type="number" id="mAge" placeholder="e.g. 81" min="1" max="120"></div>
+    <div class="form-group"><label>Gender</label>
+      <select id="mGender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other / Prefer not to say</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Diabetes Type</label>
+      <select id="mType">
+        <option>Type 1</option><option>Type 2</option><option>Gestational</option><option>Pre-diabetes</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Diabetic Since (Year)</label>
+      <input type="number" id="mDiabetesSince" placeholder="e.g. 2001" min="1950" max="2030">
+    </div>
+    <div class="form-group"><label>Units</label>
+      <select id="mUnits"><option value="mg/dL">mg/dL</option><option value="mmol/L">mmol/L</option></select>
+    </div>
+    <div class="form-group">
+      <label>💊 Current Medications</label>
+      <textarea id="mMedications" placeholder="e.g. Metformin 500mg twice daily, Glimepiride 2mg morning…" rows="4" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:none;outline:none;line-height:1.6;-webkit-appearance:none" maxlength="1200"></textarea>
+    </div>
+    <div class="form-group">
+      <label>🏥 General Condition &amp; Remarks</label>
+      <textarea id="mGeneralCondition" placeholder="e.g. Hypertensive, CKD stage 2, sedentary lifestyle, vegetarian…" rows="4" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:none;outline:none;line-height:1.6;-webkit-appearance:none" maxlength="700"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePatientModal()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" onclick="savePatientModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== NEW SUBSCRIPTION MODAL ===== -->
+<div class="modal-overlay hidden" id="subscriptionModal">
+  <div class="modal" style="max-height:90vh">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="modal-title" id="subModalTitle">New Subscription</div>
+      <button id="subDeleteBtn" onclick="deleteSubscription()" style="display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px" title="Delete">🗑️</button>
+    </div>
+    <div class="modal-sub">Set up your medication delivery</div>
+    <input type="hidden" id="subEditId">
+
+    <!-- Adopt from profile -->
+    <div style="background:rgba(27,170,156,0.1);border:1px solid rgba(27,170,156,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:8px">💊 Medications</div>
+      <button onclick="adoptMedicationsFromProfile()" style="background:rgba(27,170,156,0.15);border:1px solid rgba(27,170,156,0.3);border-radius:8px;color:var(--accent);font-size:13px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:'Poppins',Arial,sans-serif;margin-bottom:8px">
+        📋 Adopt from Profile
+      </button>
+      <textarea id="subMedications" placeholder="List medications to subscribe…" rows="3"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'Poppins',Arial,sans-serif;resize:none;outline:none;line-height:1.5;-webkit-appearance:none" maxlength="800"></textarea>
+    </div>
+
+    <div class="form-group"><label>Delivery Address</label>
+      <textarea id="subAddress" placeholder="Full delivery address…" rows="2"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:none;outline:none;line-height:1.5;-webkit-appearance:none" maxlength="300"></textarea>
+    </div>
+    <div class="form-group"><label>Mobile Number</label>
+      <input type="tel" id="subMobile" placeholder="+91 99999 99999" maxlength="15"></div>
+    <div style="display:flex;gap:10px">
+      <div class="form-group" style="flex:1"><label>Start Date</label>
+        <input type="date" id="subStart"></div>
+      <div class="form-group" style="flex:1"><label>End Date</label>
+        <input type="date" id="subEnd"></div>
+    </div>
+    <div class="form-group"><label>Frequency</label>
+      <select id="subFrequency">
+        <option value="weekly">Weekly</option>
+        <option value="fortnightly">Fortnightly</option>
+        <option value="monthly" selected>Monthly</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSubscriptionModal()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" onclick="startSubscription()">🚀 Start Subscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD MODAL (FAB) ===== -->
+<div class="modal-overlay hidden" id="addChoiceModal">
+  <div class="modal" style="padding:20px">
+    <div class="modal-title">Add Entry</div>
+    <div class="modal-sub">What would you like to log?</div>
+    <button class="btn-primary" style="margin-top:16px" onclick="closeAddChoice();switchTab('add',document.createElement('button'))">
+      🩸 Glucose Reading
+    </button>
+    <button class="btn-primary" style="margin-top:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6)"
+      onclick="closeAddChoice();openHba1cModal()">
+      🧪 HbA1c Lab Result
+    </button>
+    <button class="btn-cancel" style="margin-top:10px;width:100%;text-align:center" onclick="closeAddChoice()">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== EDIT READING MODAL ===== -->
+<div class="modal-overlay hidden" id="editReadingModal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="modal-title">Edit Reading</div>
+      <button onclick="confirmDeleteReading()" style="background:none;border:none;font-size:24px;cursor:pointer;padding:4px;color:#f87171" title="Delete reading">🗑️</button>
+    </div>
+    <div class="modal-sub">Update this glucose log entry</div>
+    <input type="hidden" id="editReadingId">
+    <div class="form-group"><label>Blood Glucose</label><input type="number" id="editGlucose" class="big-input" min="20" max="600" step="0.1"></div>
+    <div class="unit-hint" id="editUnitHint">mg/dL</div>
+    <div class="form-group"><label>Meal Context</label>
+      <select id="editMeal">
+        <option>Fasting</option><option>Before meal</option><option>After meal (1hr)</option><option>After meal (2hr)</option><option>Bedtime</option><option>Random</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Date</label><input type="date" id="editReadingDate"></div>
+    <div class="form-group"><label>Time</label><input type="time" id="editReadingTime"></div>
+    <div class="form-group"><label>Notes</label><input type="text" id="editReadingNotes" placeholder="optional notes…" maxlength="80"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEditReading()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" onclick="saveEditReading()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MANUAL HBA1C MODAL ===== -->
+<div class="modal-overlay hidden" id="hba1cModal">
+  <div class="modal">
+    <div class="modal-title" id="hba1cModalTitle">Log Lab HbA1c</div>
+      <button id="hba1cDeleteBtn" onclick="confirmDeleteHba1c()" style="display:none;background:none;border:none;font-size:24px;cursor:pointer;padding:4px;color:#f87171" title="Delete">🗑️</button>
+    <div class="modal-sub" id="hba1cModalSub">Enter the result from your blood test</div>
+    <input type="hidden" id="mHba1cId" value="">
+    <div class="form-group"><label>HbA1c Value (%)</label><input type="number" id="mHba1cVal" class="big-input" placeholder="7.2" min="3" max="20" step="0.1"></div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:14px">% · Normal &lt;5.7 · Pre-diabetes 5.7–6.4 · Diabetes ≥6.5</div>
+    <div class="form-group"><label>Test Date</label><input type="date" id="mHba1cDate"></div>
+    <div class="form-group"><label>Lab / Notes (optional)</label><input type="text" id="mHba1cNotes" placeholder="e.g. LabCorp, fasting sample…" maxlength="60"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeHba1cModal()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" onclick="saveManualHba1c()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="app hidden" id="mainApp">
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-logo">Anaya</div>
+      <div class="header-patient" onclick="goToPicker()">
+        <span id="psName">Select Patient</span> <span style="font-size:10px;opacity:0.7">▼</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+      <button class="theme-toggle" onclick="switchTab('settings',null)" title="App Settings" style="font-size:15px">⚙️</button>
+      <div id="psAv" style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;cursor:pointer;flex-shrink:0" onclick="goToPicker()"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="tab-dashboard" onclick="switchTab('dashboard',this)">
+      <span class="nav-icon">🏠</span>Home
+    </button>
+    <button class="nav-item" id="tab-subscribe" onclick="switchTab('subscribe',this)">
+      <span class="nav-icon">💊</span>Subscribe
+    </button>
+    <button class="fab" id="fabBtn" onclick="openAddModal()">+</button>
+    <button class="nav-item" id="tab-insights" onclick="switchTab('insights',this)">
+      <span class="nav-icon">🩺</span>Insights
+    </button>
+    <button class="nav-item" id="tab-profile" onclick="switchTab('profile',this)">
+      <span class="nav-icon">👤</span>Profile
+    </button>
+  </div>
+  <div class="screens">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dashboard">
+
+      <!-- Hero: Current Reading -->
+      <div class="hero-card" onclick="openLastReadingEdit()" style="cursor:pointer" title="Tap to edit last reading">
+        <div class="hero-label">Last Reading</div>
+        <div>
+          <span class="hero-val" id="latestVal">—</span>
+          <span class="hero-unit" id="latestUnit">mg/dL</span>
+        </div>
+        <div id="latestStatus" class="hero-status-pill" style="background:rgba(74,222,128,0.15);color:#4ade80"></div>
+        <div id="lastReadingMeta" class="hero-meta">—</div>
+      </div>
+
+      <!-- Mini stats: HbA1c + Avg Fasting + Avg Post-meal -->
+      <div class="mini-stats">
+        <div class="mini-stat" style="animation-delay:0.05s">
+          <div class="mini-stat-val" id="hba1cQuick">—<span class="mini-stat-unit">%</span></div>
+          <div class="mini-stat-label">Est. HbA1c</div>
+          <div class="mini-stat-sub">from glucose log</div>
+        </div>
+        <div class="mini-stat" style="animation-delay:0.1s">
+          <div class="mini-stat-val" id="avgFasting">—<span class="mini-stat-unit" id="avgFastingUnit"> mg/dL</span></div>
+          <div class="mini-stat-label">Avg Fasting</div>
+          <div class="mini-stat-sub">last 30 days</div>
+        </div>
+        <div class="mini-stat" style="animation-delay:0.12s">
+          <div class="mini-stat-val" id="avgPreMeal">—<span class="mini-stat-unit" id="avgPreUnit"> mg/dL</span></div>
+          <div class="mini-stat-label">Avg Pre-meal</div>
+          <div class="mini-stat-sub">last 30 days</div>
+        </div>
+        <div class="mini-stat" style="animation-delay:0.14s">
+          <div class="mini-stat-val" id="avgPostMeal">—<span class="mini-stat-unit" id="avgPostUnit"> mg/dL</span></div>
+          <div class="mini-stat-label">Avg Post-meal</div>
+          <div class="mini-stat-sub">last 30 days</div>
+        </div>
+      </div>
+
+      <!-- 7-day Trend Chart -->
+      <div class="card" style="animation-delay:0.15s">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="card-title" style="margin-bottom:0">7-Day Trend</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button onclick="openReportModal()" style="background:none;border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:11px;font-weight:600;padding:4px 9px;cursor:pointer;font-family:'Poppins',Arial,sans-serif">📤</button>
+          </div>
+        </div>
+        <div class="range-btns">
+          <button class="range-btn" onclick="setRange(7,this)">7D</button>
+          <button class="range-btn" onclick="setRange(14,this)">14D</button>
+          <button class="range-btn active" onclick="setRange(30,this)">30D</button>
+          <button class="range-btn" onclick="setRange(0,this)">All</button>
+        </div>
+        <div class="chart-wrap" style="position:relative">
+          <canvas id="glucoseChart" height="190"></canvas>
+          <div class="chart-tooltip" id="chartTooltip">
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <span class="tt-val" id="ttVal">—</span>
+              <span class="tt-unit" id="ttUnit">mg/dL</span>
+              <span id="ttStatus" style="font-size:12px;font-weight:600;margin-left:4px"></span>
+            </div>
+            <hr class="tt-divider">
+            <div class="tt-row"><span>🍽️</span><span id="ttMeal">—</span></div>
+            <div class="tt-row"><span>🕐</span><span id="ttTime">—</span></div>
+            <div class="tt-row" id="ttNoteRow" style="display:none"><span>📝</span><span id="ttNote" style="word-break:break-word;white-space:normal"></span></div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>Fasting</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div>Pre-meal</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Post-meal</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#94a3b8"></div>Other</div>
+          <div class="leg-item" style="margin-left:auto;font-size:11px;color:var(--muted)">Tap dot</div>
+        </div>
+        <div class="chart-detail-list" id="chartDetailList"></div>
+      </div>
+
+      <!-- HbA1c card (merged from HbA1c tab) -->
+      <div class="card" id="dashHba1cCard">
+        <div class="card-title" style="margin-bottom:10px">🩸 HbA1c</div>
+        <div class="compare-row">
+          <div class="compare-box" style="cursor:pointer" onclick="openHba1cModal()" title="Tap to log lab result">
+            <div class="compare-val" id="hba1cBig">—</div>
+            <div class="compare-lbl">Estimated</div>
+            <div class="compare-src" style="background:rgba(79,168,255,0.12);color:var(--accent)">from glucose log</div>
+          </div>
+          <div class="compare-box" style="cursor:pointer" onclick="openHba1cModal()" title="Tap to log lab result">
+            <div class="compare-val" id="hba1cLabLatest">—</div>
+            <div class="compare-lbl">Lab Result</div>
+            <div class="compare-src" id="hba1cLabDate" style="background:rgba(125,211,252,0.1);color:var(--accent2)">tap to add</div>
+          </div>
+        </div>
+        <div class="hba1c-band" id="hba1cBand">
+          <div class="hba1c-seg" style="background:#22c55e;opacity:0.3"></div>
+          <div class="hba1c-seg" style="background:#84cc16;opacity:0.3"></div>
+          <div class="hba1c-seg" style="background:#facc15;opacity:0.3"></div>
+          <div class="hba1c-seg" style="background:#f97316;opacity:0.3"></div>
+          <div class="hba1c-seg" style="background:#ef4444;opacity:0.3"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:8px">
+          <span>&lt;5.7%</span><span>5.7</span><span>6.5</span><span>7.5</span><span>&gt;9%</span>
+        </div>
+        <div id="hba1cInterpDiv"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div style="font-size:11px;color:var(--muted)">eAG: <span id="eagVal" style="color:var(--text);font-weight:600">—</span> <span id="eagUnit">mg/dL</span></div>
+          <div id="hba1cInterpBadge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(79,168,255,0.12);color:var(--accent)"></div>
+        </div>
+        <!-- HbA1c trend chart -->
+        <div class="chart-wrap" style="margin-top:12px"><canvas id="hba1cTrendChart" height="120"></canvas></div>
+        <div class="legend" style="margin-top:6px">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent2)"></div>Lab</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(79,168,255,0.5);border:1px dashed var(--accent)"></div>Estimated</div>
+        </div>
+        <!-- Lab log -->
+        <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted)">Lab History</div>
+          </div>
+          <div id="hba1cLabList"></div>
+        </div>
+        <div class="hba1c-note" style="margin-top:10px">⚠️ Estimated from glucose log (Nathan formula). Not a substitute for a lab test.</div>
+      </div>
+
+      <!-- In-range analysis -->
+      <div class="card">
+        <div class="card-title">📊 In-Range Analysis</div>
+        <div id="inRangeAnalysis"></div>
+      </div>
+
+      <button class="btn-primary" style="margin-bottom:8px" onclick="openReportModal()">
+        📤 Share Glucose Report
+      </button>
+    </div>
+
+    <!-- INSIGHTS (dedicated tab — full scrollable) -->
+    <div class="screen" id="screen-insights">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">🩺 AI Doctor Insights</div>
+          <button id="aiInsightsBtnFull" onclick="loadAiInsights()"
+            style="background:var(--accent);border:none;border-radius:10px;color:white;font-size:12px;font-weight:700;padding:6px 13px;cursor:pointer;font-family:'Poppins',Arial,sans-serif">
+            Analyse
+          </button>
+        </div>
+        <div id="aiInsightsBodyFull" style="overflow:visible">
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;text-align:center;padding:20px 0">
+            Tap <strong style="color:var(--text)">Analyse</strong> for a full clinical assessment.<br><br>
+            <span style="font-size:11px;opacity:0.7">⚠️ AI-generated guidance only. Not a substitute for your doctor.</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Target Ranges</div>
+        <div id="targetRangeInfo"></div>
+      </div>
+    </div>
+
+
+    <!-- SUBSCRIBE SCREEN -->
+    <div class="screen" id="screen-subscribe">
+      <div class="card">
+        <div class="card-title">💊 Medication Subscription</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">Subscribe to receive your medications at home. We'll deliver as per your schedule.</p>
+        <button class="btn-primary" onclick="openNewSubscription()">+ New Subscription</button>
+      </div>
+
+      <!-- Active subscriptions list -->
+      <div class="card">
+        <div class="card-title">📦 Active Subscriptions</div>
+        <div id="subscriptionList">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+            No active subscriptions.<br>Tap <strong style="color:var(--text)">+ New Subscription</strong> above.
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- APP SETTINGS SCREEN (Admin) -->
+    <div class="screen" id="screen-settings">
+      <div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:28px;margin-bottom:6px">⚙️</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">App Settings</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Read-only — configured by developer</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📧 Admin Email</div>
+        <div class="info-row">
+          <div class="info-key">Email</div>
+          <div class="info-val" id="displayAdminEmail" style="color:var(--accent);font-size:13px">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">Subscription requests, queries and alerts are sent to this address.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔑 Gemini AI API Key</div>
+        <div class="info-row">
+          <div class="info-key">Status</div>
+          <div class="info-val" id="apiKeyStatus" style="color:var(--normal)">—</div>
+        </div>
+        <div class="info-row">
+          <div class="info-key">Key</div>
+          <div class="info-val" style="font-size:12px;color:var(--muted);letter-spacing:1px" id="displayApiKey">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">Used for AI Insights, Voice input and OCR scanning.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Reference Analysis Style</div>
+        <div id="displayRefAnalysis" style="font-size:13px;color:var(--muted);line-height:1.7;max-height:120px;overflow:hidden;text-overflow:ellipsis;position:relative">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">AI Insights uses this as a style and depth reference for all patients.</div>
+      </div>
+
+      <!-- Theme -->
+      <div class="card">
+        <div class="card-title">🎨 Appearance</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+          <span style="font-size:15px;color:var(--text);font-weight:600">Dark / Light Mode</span>
+          <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ℹ️ About</div>
+        <div class="info-row"><div class="info-key">App</div><div class="info-val">Anaya</div></div>
+        <div class="info-row"><div class="info-key">Tagline</div><div class="info-val" style="font-size:12px">Care. Support. Peace of Mind.</div></div>
+        <div class="info-row"><div class="info-key">Version</div><div class="info-val">2.0</div></div>
+        <div class="info-row"><div class="info-key">AI Engine</div><div class="info-val">Google Gemini</div></div>
+        <div class="info-row"><div class="info-key">Storage</div><div class="info-val">On-device only</div></div>
+      </div>
+    </div>
+
+    <!-- ADD READING -->
+    <div class="screen" id="screen-add">
+      <!-- Mode toggle -->
+      <div class="card" style="padding:12px">
+        <div class="toggle-pills" id="logModePills">
+          <button class="toggle-pill active" id="logModeManual" onclick="setLogMode('manual',this)">✏️ Manual</button>
+          <button class="toggle-pill" id="logModeOcr" onclick="setLogMode('ocr',this)">📷 Scan</button>
+          <button class="toggle-pill" id="logModeVoice" onclick="setLogMode('voice',this)">🎤 Voice</button>
+        </div>
+      </div>
+
+      <!-- Manual entry -->
+      <div id="logPanelManual" class="card">
+        <div class="card-title">New Blood Glucose Reading</div>
+        <div class="form-group"><label>Blood Glucose</label><input type="number" id="inputGlucose" class="big-input" placeholder="120" min="20" max="600" step="0.1"></div>
+        <div class="unit-hint" id="unitHint">mg/dL · Target: 70–180</div>
+        <div class="form-group"><label>Meal Context</label>
+          <select id="inputMeal">
+            <option>Fasting</option><option>Before meal</option><option>After meal (1hr)</option><option>After meal (2hr)</option><option>Bedtime</option><option>Random</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Date</label><input type="date" id="inputDate"></div>
+        <div class="form-group"><label>Time</label><input type="time" id="inputTime"></div>
+        <div class="form-group"><label>Notes (optional)</label><input type="text" id="inputNotes" placeholder="e.g. after exercise, stressed…" maxlength="80"></div>
+        <button class="btn-primary" onclick="addReading()">Save Reading</button>
+      </div>
+
+      <!-- Scan / Upload panel -->
+      <div id="logPanelOcr" style="display:none">
+        <div class="card">
+          <div class="card-title">📷 Scan Glucometer or Upload Report</div>
+          <p style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+            Take a photo of your glucometer, or upload a lab report (image or PDF). AI will extract readings automatically.
+          </p>
+          <div style="display:flex;gap:10px;margin-bottom:14px">
+            <label style="flex:1;cursor:pointer">
+              <input type="file" id="ocrCamera" accept="image/*" capture="environment" style="display:none" onchange="handleOcrFile(this,'glucometer')">
+              <div style="background:linear-gradient(135deg,var(--accent),#1d6fa8);border-radius:14px;padding:16px;text-align:center;color:white;font-weight:700;font-size:15px">
+                📸 Take Photo<br><span style="font-size:11px;font-weight:400;opacity:0.85">Glucometer</span>
+              </div>
+            </label>
+            <label style="flex:1;cursor:pointer">
+              <input type="file" id="ocrUpload" accept="image/*,application/pdf" style="display:none" onchange="handleOcrFile(this,'labreport')">
+              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--text);font-weight:700;font-size:15px">
+                📁 Upload File<br><span style="font-size:11px;font-weight:400;color:var(--muted)">Lab report / PDF</span>
+              </div>
+            </label>
+          </div>
+          <div id="ocrPreview" style="display:none;margin-bottom:12px">
+            <img id="ocrPreviewImg" style="width:100%;border-radius:10px;max-height:220px;object-fit:contain;background:#000" alt="preview">
+          </div>
+          <div id="ocrStatus" style="display:none;text-align:center;padding:20px 14px;font-size:14px;color:var(--accent)">
+            <div style="font-size:32px;margin-bottom:8px">⏳</div>
+            <div id="ocrStatusText">Analysing with AI…</div>
+          </div>
+        </div>
+        <div id="ocrResults" style="display:none" class="card">
+          <div class="card-title">Extracted Readings — Review &amp; Save</div>
+          <div id="ocrResultsList"></div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button onclick="clearOcrResults()" style="flex:1;padding:13px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',Arial,sans-serif">Clear</button>
+            <button class="btn-primary" style="flex:2;margin-top:0" onclick="saveAllOcrReadings()">💾 Save All to Log</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice input panel -->
+      <div id="logPanelVoice" style="display:none">
+        <div class="card">
+          <div class="card-title">🎤 Speak Your Reading</div>
+          <p style="font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+            Tap the mic and speak naturally — in English or Hindi.<br>
+            e.g. <em style="color:var(--text)">"126 fasting this morning"</em> or
+            <em style="color:var(--text)">"sugar 180 lunch ke baad kal"</em>
+          </p>
+          <!-- Language selector -->
+          <div class="form-group" style="margin-bottom:14px">
+            <label>Language</label>
+            <div class="toggle-pills" id="voiceLangPills">
+              <button class="toggle-pill active" onclick="setVoiceLang('en-IN',this)">🇬🇧 English</button>
+              <button class="toggle-pill" onclick="setVoiceLang('hi-IN',this)">🇮🇳 Hindi</button>
+              <button class="toggle-pill" onclick="setVoiceLang('hi-IN',this)">🔀 Hinglish</button>
+            </div>
+          </div>
+          <!-- Mic button -->
+          <div style="text-align:center;margin-bottom:18px">
+            <button id="voiceMicBtn" onclick="toggleVoiceRecording()"
+              style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1d6fa8);border:none;font-size:36px;cursor:pointer;box-shadow:0 4px 24px rgba(79,168,255,0.4);transition:all 0.2s">
+              🎤
+            </button>
+            <div id="voiceStatus" style="margin-top:12px;font-size:14px;color:var(--muted);font-weight:600">Tap to start speaking</div>
+            <div id="voiceSilenceBar" style="display:none;margin-top:10px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;width:160px;margin-left:auto;margin-right:auto">
+              <div id="voiceSilenceFill" style="height:100%;background:var(--accent);width:100%;transition:width 0.1s linear"></div>
+            </div>
+          </div>
+          <!-- Transcript display -->
+          <div id="voiceTranscript" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;font-size:15px;color:var(--text);line-height:1.6;min-height:52px"></div>
+          <div id="voiceAiStatus" style="display:none;text-align:center;padding:14px;color:var(--accent);font-size:14px">
+            <div style="font-size:28px;margin-bottom:6px">⏳</div>Interpreting speech…
+          </div>
+        </div>
+        <div id="voiceResults" style="display:none" class="card">
+          <div class="card-title">Extracted Reading — Review &amp; Save</div>
+          <div id="voiceResultsList"></div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button onclick="clearVoiceResults()" style="flex:1;padding:13px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',Arial,sans-serif">Clear</button>
+            <button class="btn-primary" style="flex:2;margin-top:0" onclick="saveAllOcrReadings('voice')">💾 Save to Log</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PROFILE -->
+    <div class="screen" id="screen-profile">
+      <div class="card">
+        <div class="profile-header">
+          <div class="profile-big-av" id="profileAv"></div>
+          <div class="profile-display-name" id="profileName">—</div>
+          <div class="profile-display-age" id="profileAge">—</div>
+        </div>
+        <div id="profileInfo"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Edit Profile</div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="editName" maxlength="40" autocorrect="off"></div>
+        <div class="form-group"><label>Age</label><input type="number" id="editAge" min="1" max="120"></div>
+        <div class="form-group"><label>Gender</label>
+          <select id="editGender"><option value="male">Male</option><option value="female">Female</option><option value="other">Other / Prefer not to say</option></select>
+        </div>
+        <div class="form-group"><label>Diabetic Since (Year)</label>
+          <input type="number" id="editDiabetesSince" placeholder="e.g. 2001" min="1950" max="2030">
+        </div>
+        <div class="form-group"><label>Diabetes Type</label>
+          <select id="editType"><option>Type 1</option><option>Type 2</option><option>Gestational</option><option>Pre-diabetes</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label>Units</label>
+          <select id="editUnits"><option value="mg/dL">mg/dL</option><option value="mmol/L">mmol/L</option></select>
+        </div>
+        <button class="btn-primary" onclick="updateProfile()">Save Changes</button>
+      </div>
+
+      <!-- Medications card -->
+      <div class="card">
+        <div class="card-title">💊 Current Medications</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">List all current medications, doses and timing. Used by AI Insights for personalised analysis.</div>
+        <textarea id="editMedications" placeholder="e.g.&#10;Metformin 500mg — twice daily (morning &amp; night)&#10;Glimepiride 2mg — morning before breakfast&#10;Insulin Glargine 10 units — bedtime&#10;Aspirin 75mg — morning&#10;Amlodipine 5mg — morning" rows="7" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:vertical;outline:none;line-height:1.6;-webkit-appearance:none" maxlength="1200"></textarea>
+        <button class="btn-primary" style="margin-top:12px" onclick="saveMedications()">Save Medications</button>
+      </div>
+
+      <!-- General condition card -->
+      <div class="card">
+        <div class="card-title">🏥 General Condition &amp; Additional Remarks</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">Overall health status, comorbidities, lifestyle, diet habits, recent events. Used by AI Insights.</div>
+        <textarea id="editGeneralCondition" placeholder="e.g.&#10;81-year-old with 24-year history of Type 2 diabetes. Hypertensive, on BP medication. Mild CKD stage 2. Generally sedentary lifestyle. Vegetarian diet, tends to eat carb-heavy meals. Recently hospitalised for hyperglycemia in March. Now on revised medication regimen. Mobility limited due to arthritis. Mentally alert and cooperative. Family monitors closely." rows="7" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:vertical;outline:none;line-height:1.6;-webkit-appearance:none" maxlength="700"></textarea>
+        <button class="btn-primary" style="margin-top:12px" onclick="saveGeneralCondition()">Save Remarks</button>
+      </div>
+      <!-- Query section in profile -->
+      <div class="card">
+        <div class="card-title">✉️ Send Query / Complaint</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.6">Send a message or complaint directly to our team.</div>
+        <textarea id="profileQueryText" placeholder="Type your query or complaint here…" rows="4"
+          style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Poppins',Arial,sans-serif;resize:none;outline:none;line-height:1.6;-webkit-appearance:none;margin-bottom:10px" maxlength="1000"></textarea>
+        <button class="btn-primary" onclick="sendProfileQuery()">📤 Send Query</button>
+      </div>
+
+      <button class="btn-secondary" onclick="exportData()">📤 Export CSV</button>
+      <button class="btn-secondary" style="color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="clearReadings()">🗑 Clear All Readings</button>
+      <button class="btn-secondary" style="color:#ef4444;border-color:rgba(239,68,68,0.3)" onclick="deletePatient()">❌ Delete This Patient</button>
+
+      
+
+  </div>
+</div>
+
+<!-- ===== API KEY MODAL ===== -->
+<div class="modal-overlay hidden" id="apiKeyModal">
+  <div class="modal">
+    <div class="modal-title">🔑 Google Gemini API Key</div>
+    <div class="modal-sub">Free API key — required for AI Insights, Voice &amp; OCR</div>
+    <div style="background:rgba(79,168,255,0.08);border:1px solid rgba(79,168,255,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text);line-height:1.8">
+      <strong>Get your FREE key in 1 minute:</strong><br>
+      1. Go to <strong>aistudio.google.com</strong><br>
+      2. Sign in with Google → tap <strong>Get API key</strong><br>
+      3. Click <strong>Create API key</strong> → Copy it<br>
+      4. Paste below — no credit card needed<br><br>
+      <span style="color:var(--muted);font-size:12px">🔒 Stored only on your device. Never sent anywhere except Google's API.</span>
+    </div>
+    <div class="form-group">
+      <label>Gemini API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="AIza…" autocomplete="off" autocorrect="off" spellcheck="false" style="font-family:monospace;font-size:13px;letter-spacing:0.5px">
+    </div>
+    <div id="apiKeyError" style="display:none;color:#ef4444;font-size:13px;margin:-8px 0 12px;font-weight:600"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeApiKeyModal()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPORT MODAL ===== -->
+<div class="modal-overlay hidden" id="reportModal">
+  <div class="modal">
+    <div class="modal-title">📋 Generate Lab Report</div>
+    <div class="modal-sub">A4 format · Anaya branding · Choose period each time</div>
+    <div class="form-group">
+      <label>Report Period</label>
+      <div class="toggle-pills" id="periodPills" style="margin-bottom:0">
+        <button class="toggle-pill active" id="rp7" onclick="selectReportPeriod(7,this)">7 Days</button>
+        <button class="toggle-pill" id="rp14" onclick="selectReportPeriod(14,this)">14 Days</button>
+        <button class="toggle-pill" id="rp30" onclick="selectReportPeriod(30,this)">1 Month</button>
+        <button class="toggle-pill" id="rp90" onclick="selectReportPeriod(90,this)">3 Months</button>
+      </div>
+    </div>
+    <div id="reportPeriodInfo" style="font-size:12px;color:var(--muted);margin:-8px 0 14px;text-align:center"></div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label>Format</label>
+      <div class="toggle-pills" id="formatPills" style="margin-bottom:0">
+        <button class="toggle-pill active" id="rfmtPng" onclick="selectReportFormat('png',this)">🖼 PNG Image</button>
+        <button class="toggle-pill" id="rfmtPdf" onclick="selectReportFormat('pdf',this)">📄 PDF</button>
+      </div>
+    </div>
+    <div id="reportFormatHint" style="font-size:11px;color:var(--muted);margin:-4px 0 14px;text-align:center">PNG: share to WhatsApp, Mail, save to Photos</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+      <button class="btn-primary" style="margin-top:0" id="reportGenerateBtn" onclick="generateReport()">📤 Generate Report</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Report overlay -->
+<div class="report-overlay hidden" id="reportOverlay">
+  <div class="report-header">
+    <div class="report-header-title">📊 Glucose Report Preview</div>
+    <button class="report-close" onclick="closeReport()">✕</button>
+  </div>
+  <div class="report-actions">
+    <button class="report-action-btn primary" onclick="doShare()">📤 Share</button>
+    <button class="report-action-btn" onclick="doDownloadImage()">⬇️ PNG</button>
+    <button class="report-action-btn" onclick="doDownloadPdf()">📄 PDF</button>
+  </div>
+  <div style="width:100%;padding:0 8px 16px;font-size:11px;color:rgba(232,244,255,0.4);text-align:center">
+    Scroll to preview · Share opens native share sheet · PDF opens print dialog
+  </div>
+  <canvas id="reportCanvas" style="width:100%;max-width:794px;border-radius:4px;box-shadow:0 4px 32px rgba(0,0,0,0.5)"></canvas>
+  <div style="height:32px"></div>
+</div>
+
+<script>
+<script src="app.js"></script>
+<iframe name="formsubmit_iframe" style="display:none"></iframe>
+</body>
+</html>
