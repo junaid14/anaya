@@ -2131,7 +2131,7 @@ Return ONLY a JSON array. No explanation, no markdown. Example:
 [{"val":98,"date":"2024-03-15","time":"07:30","meal":"Fasting","notes":"FBS","source":"labreport"}]`;
 
     const data = await geminiFetch(prompt, base64, mediaType);
-    const rawText = data.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+    const clean = data.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
 
     let extracted;
     try {
