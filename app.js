@@ -117,7 +117,7 @@ function openAddPatient() {
   document.getElementById('patientModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('mName').focus(), 100);
 }
-
+window.openAddPatient = openAddPatient;
 function openEditPatient(pid) {
   const p = patients.find(x=>x.id===pid);
   if (!p) return;
