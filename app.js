@@ -1772,6 +1772,10 @@ async function loadAiInsights() {
     ? `\nREFERENCE STYLE EXAMPLE (match this depth and personalisation):\n${referenceRaw}\n`
     : '';
 
+  const yr = new Date().getFullYear();
+  const diabetesDuration = p.diabetesSince ? (yr - p.diabetesSince) + ' years (since ' + p.diabetesSince + ')' : 'Unknown';
+  const ageTargetNote = p.age >= 75 ? 'NOTE: Patient is 75+. Use relaxed targets: fasting 90–150 mg/dL, post-meal <200 mg/dL. Avoid hypoglycaemia.' : '';
+
   const prompt = `You are an experienced diabetologist and endocrinologist providing a detailed, personalised clinical assessment. You have full context about this patient. Be specific, use the actual numbers from the data, and write like a doctor who knows this patient well.
 
 CRITICAL: Do NOT be generic. Reference the specific readings, dates, patterns and clinical context provided. Do NOT cut off or truncate — complete every section fully.
