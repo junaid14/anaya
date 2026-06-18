@@ -2481,24 +2481,19 @@ function clearVoiceResults() {
 
 
 // ====== HARDCODED APP SETTINGS (set by developer) ======
-const APP_ADMIN_EMAIL    = 'YOUR_EMAIL@gmail.com';         // ← replace with your email
-const APP_GEMINI_KEY     = 'YOUR_GEMINI_API_KEY_HERE';     // ← replace with your Gemini key
+const APP_ADMIN_EMAIL    = 'junaidhashmi14@gmail.com';         // ← replace with your email
+const APP_GEMINI_KEY     = 'AQ.Ab8RN6K9Xc2HGB_NjNCIwYkdGtTgdR3uwU33NWCErj4DRGoKdA';     // ← replace with your Gemini key
 const APP_REFERENCE_ANALYSIS = `For an 81-year-old diabetic with a 24-year history of diabetes, these readings over the last week show a mixed but improving pattern:
-
 Overall Assessment:
 Positives — Fasting sugars are generally well controlled. No evidence of fasting hypoglycemia. For an elderly patient, avoiding low sugar is often more important than achieving very tight control.
 Areas of concern — Post-meal sugars are the main issue. A 234 mg/dL reading after breakfast suggests a significant glucose spike. The 193 mg/dL pre-dinner reading indicates glucose remained elevated through the day.
-
 Looking at the recent values:
 - Fasting: 120 → acceptable.
 - Before lunch: 167 → reasonable for an elderly diabetic.
 - After breakfast (2hr): 234 → too high.
 - Before dinner: 193 → higher than ideal.
-
 This pattern suggests: 1) Morning medication may not be fully covering breakfast/lunch. 2) Breakfast carbohydrates may be causing a spike. 3) Overall control is improving compared with the earlier 311 mg/dL reading that occurred without medication.
-
 Targets for an elderly patient — Many doctors are comfortable with: Fasting 90–130 mg/dL, Pre-meal 100–180 mg/dL, 2-hour post-meal <200 mg/dL, HbA1c roughly 7–8%.
-
 I would continue monitoring for another 1–2 weeks and particularly record: Fasting, 2-hour after breakfast, Before dinner. Those three values will show whether further medication adjustment is needed.`;   // ← replace or extend
 
 // Initialise from hardcoded values (overrides any saved localStorage values)
